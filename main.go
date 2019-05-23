@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	VERSION = `0.1.2`
+	VERSION = `0.2.0`
 )
 
 var build = `UNKNOWN` // injected via Makefile
@@ -41,6 +41,13 @@ var BARCODES = map[string]BarcodeDefinition{
 	"ean13":  {"\x02", 12, 13, []ByteRange{{48, 57}}},
 	"ean8":   {"\x03", 7, 8, []ByteRange{{48, 57}}},
 	"code39": {"\x04", 1, 0, []ByteRange{{48, 57}, {65, 90}, {32, 32}, {36, 37}, {43, 43}, {45, 47}}},
+}
+
+var BARCODE_HRI_POS = map[string]string{
+	"none":  "\x00",
+	"above": "\x01",
+	"below": "\x02",
+	"both":  "\x03",
 }
 
 var ESCPOS = map[string]TagDefintion{
@@ -92,7 +99,17 @@ var ESCPOS = map[string]TagDefintion{
 			log.Println("Barcode will be of height:", hint)
 			preCodes.WriteString("\x1d\x68")
 			preCodes.WriteByte(h)
-			postCodes.WriteString("\x1d\x68\xa2")
+			postCodes.WriteString("\x1d\x68\xa2") // reset height to default 162
+		}
+		hripos := getAttr(e, "hri_pos", false)
+		if hripos != "" {
+			code, ok := BARCODE_HRI_POS[hripos]
+			if !ok {
+				log.Fatalln("Unsupported HRI position:", hripos)
+			}
+			preCodes.WriteString("\x1d\x48")
+			preCodes.WriteString(code)
+			postCodes.WriteString("\x1d\x48\x02") // reset to default below
 		}
 		return fmt.Sprintf("%s\x1d\x6b%s%s\x00%s", preCodes.String(), mode.Code, value, postCodes.String())
 	}},
@@ -136,7 +153,7 @@ func main() {
 			}
 			log.Fatalln("Error reading next token:", err)
 		}
-		log.Printf("%T -> '%v': %s\n", tkn, tkn, tkn)
+		//log.Printf("%T -> '%v': %s\n", tkn, tkn, tkn)
 		switch tt := tkn.(type) {
 		case xml.StartElement:
 			tag := getTagDef(tt.Name.Local)
