@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	VERSION = `0.3.0`
+	VERSION = `0.3.1`
 )
 
 var build = `UNKNOWN` // injected via Makefile
@@ -36,7 +36,7 @@ type BarcodeDefinition struct {
 	ValidRanges []ByteRange
 }
 
-var BARCODES = map[string]BarcodeDefinition{
+var BARCODE = map[string]BarcodeDefinition{
 	"upc":    {"\x00", 11, 12, []ByteRange{{48, 57}}},
 	"ean13":  {"\x02", 12, 13, []ByteRange{{48, 57}}},
 	"ean8":   {"\x03", 7, 8, []ByteRange{{48, 57}}},
@@ -67,7 +67,7 @@ var ESCPOS = map[string]TagDefintion{
 	"huge":   {"\x1b\x21\x30", "\x1b\x21\x00", false, nil},
 	"barcode": {"", "", false, func(e xml.StartElement) string {
 		name := getAttr(e, "mode", true)
-		mode, ok := BARCODES[name]
+		mode, ok := BARCODE[name]
 		if !ok {
 			log.Fatalln("No supported barcode type:", name)
 		}
