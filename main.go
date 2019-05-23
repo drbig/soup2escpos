@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
+	"image/color"
+	"image/png"
 	"io"
 	"log"
 	"os"
@@ -12,7 +14,7 @@ import (
 )
 
 const (
-	VERSION = `0.3.1`
+	VERSION = `0.5.1`
 )
 
 var build = `UNKNOWN` // injected via Makefile
@@ -53,6 +55,20 @@ var BARCODE_HRI_POS = map[string]string{
 var BARCODE_HRI_FONT = map[string]string{
 	"small":  "\x01",
 	"normal": "\x00",
+}
+
+const PAPER_WIDTH_IN = 2 // for images width sanity check only
+
+type ImageDefintion struct {
+	Code   string
+	HorDPI int
+}
+
+var IMG_MODE = map[string]ImageDefintion{
+	"normal": {"\x00", 180},
+	"wide":   {"\x01", 90},
+	"tall":   {"\x02", 180},
+	"huge":   {"\x03", 90},
 }
 
 var ESCPOS = map[string]TagDefintion{
@@ -127,6 +143,73 @@ var ESCPOS = map[string]TagDefintion{
 			postCodes.WriteString("\x1d\x66\x00")
 		}
 		return fmt.Sprintf("%s\x1d\x6b%s%s\x00%s", preCodes.String(), mode.Code, value, postCodes.String())
+	}},
+	"img": {"", "", false, func(e xml.StartElement) string {
+		src := getAttr(e, "src", true)
+		ifh, err := os.Open(src)
+		if err != nil {
+			log.Fatalln("Error opening image file:", err)
+		}
+		defer ifh.Close()
+		cfg, err := png.DecodeConfig(ifh)
+		if err != nil {
+			log.Fatalln("Error decoding config:", err)
+		}
+		var mode ImageDefintion
+		var ok bool
+		mname := getAttr(e, "mode", false)
+		if mname == "" {
+			mode = IMG_MODE["normal"]
+		} else {
+			mode, ok = IMG_MODE[mname]
+			if !ok {
+				log.Fatalln("No such image mode:", mname)
+			}
+		}
+		maxWidth := PAPER_WIDTH_IN * mode.HorDPI
+		if cfg.Width > maxWidth {
+			log.Fatalln("Image width of", cfg.Width, "exceeds calculated max of", maxWidth)
+		}
+		if cfg.Height > 65535 { // max two bytes can hold
+			log.Fatalln("Image height of", cfg.Height, "exceeds max of 0xffff")
+		}
+		ifh.Seek(0, io.SeekStart)
+		img, err := png.Decode(ifh)
+		if err != nil {
+			log.Fatalln("Error decoding image:", err)
+		}
+		hX := ((uint16(cfg.Width) + 7) / 8)
+		hY := uint16(cfg.Height)
+		var code strings.Builder
+		code.WriteString("\x1d\x76\x30")
+		code.WriteString(mode.Code)
+		code.WriteByte(byte(hX & 0xff))
+		code.WriteByte(byte((hX >> 8) & 0xff))
+		code.WriteByte(byte(hY & 0xff))
+		code.WriteByte(byte((hY >> 8) & 0xff))
+		var mask, i, temp uint8
+		mask = 0x80
+		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+			for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
+				c := color.GrayModel.Convert(img.At(x, y)).(color.Gray)
+				if c.Y < 128 {
+					temp |= mask
+				}
+				mask = mask >> 1
+				i++
+				if i == 8 {
+					code.WriteByte(byte(temp))
+					mask = 0x80
+					i = 0
+					temp = 0
+				}
+			}
+			if i != 0 {
+				code.WriteByte(byte(temp))
+				i = 0
+			}
+		}
+		return code.String()
 	}},
 }
 
