@@ -7,11 +7,12 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
 const (
-	VERSION = `0.1.0`
+	VERSION = `0.1.2`
 )
 
 var build = `UNKNOWN` // injected via Makefile
@@ -77,7 +78,23 @@ var ESCPOS = map[string]TagDefintion{
 				log.Fatalf("Byte at pos %d is out of valid range\n", p)
 			}
 		}
-		return fmt.Sprintf("\x1d\x6b%s%s\x00", mode.Code, value)
+		var preCodes, postCodes strings.Builder
+		height := getAttr(e, "height", false)
+		if height != "" {
+			hint, err := strconv.Atoi(height)
+			if err != nil {
+				log.Fatalln("Failed to convert 'height' attr:", err)
+			}
+			h := byte(hint)
+			if (h < 8) && (h > 162) {
+				log.Fatalln("Height out of range")
+			}
+			log.Println("Barcode will be of height:", hint)
+			preCodes.WriteString("\x1d\x68")
+			preCodes.WriteByte(h)
+			postCodes.WriteString("\x1d\x68\xa2")
+		}
+		return fmt.Sprintf("%s\x1d\x6b%s%s\x00%s", preCodes.String(), mode.Code, value, postCodes.String())
 	}},
 }
 
