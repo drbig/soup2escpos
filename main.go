@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	VERSION = `0.2.0`
+	VERSION = `0.3.0`
 )
 
 var build = `UNKNOWN` // injected via Makefile
@@ -48,6 +48,11 @@ var BARCODE_HRI_POS = map[string]string{
 	"above": "\x01",
 	"below": "\x02",
 	"both":  "\x03",
+}
+
+var BARCODE_HRI_FONT = map[string]string{
+	"small":  "\x01",
+	"normal": "\x00",
 }
 
 var ESCPOS = map[string]TagDefintion{
@@ -110,6 +115,16 @@ var ESCPOS = map[string]TagDefintion{
 			preCodes.WriteString("\x1d\x48")
 			preCodes.WriteString(code)
 			postCodes.WriteString("\x1d\x48\x02") // reset to default below
+		}
+		hrifnt := getAttr(e, "hri_font", false)
+		if hrifnt != "" {
+			code, ok := BARCODE_HRI_FONT[hrifnt]
+			if !ok {
+				log.Fatalln("Unsupported HRI font:", hrifnt)
+			}
+			preCodes.WriteString("\x1d\x66")
+			preCodes.WriteString(code)
+			postCodes.WriteString("\x1d\x66\x00")
 		}
 		return fmt.Sprintf("%s\x1d\x6b%s%s\x00%s", preCodes.String(), mode.Code, value, postCodes.String())
 	}},
