@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	VERSION = `0.5.1`
+	VERSION = `0.5.2`
 )
 
 var build = `UNKNOWN` // injected via Makefile
@@ -187,25 +187,25 @@ var ESCPOS = map[string]TagDefintion{
 		code.WriteByte(byte((hX >> 8) & 0xff))
 		code.WriteByte(byte(hY & 0xff))
 		code.WriteByte(byte((hY >> 8) & 0xff))
-		var mask, i, temp uint8
+		var mask, i, current uint8
 		mask = 0x80
 		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
 			for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
 				c := color.GrayModel.Convert(img.At(x, y)).(color.Gray)
 				if c.Y < 128 {
-					temp |= mask
+					current |= mask
 				}
 				mask = mask >> 1
 				i++
 				if i == 8 {
-					code.WriteByte(byte(temp))
+					code.WriteByte(byte(current))
 					mask = 0x80
 					i = 0
-					temp = 0
+					current = 0
 				}
 			}
 			if i != 0 {
-				code.WriteByte(byte(temp))
+				code.WriteByte(byte(current))
 				i = 0
 			}
 		}
