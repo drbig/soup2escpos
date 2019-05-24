@@ -9,7 +9,7 @@ clean:
 	@rm -f $(PROJECT)-*
 
 amd64:
-	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $(PROJECT)-amd64-$(VER) .
+	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $(PROJECT)-$@-$(VER) .
 
 rpi1:
-	GOOS=linux GOARCH=arm GOARM=5 go build $(LDFLAGS) -o $(PROJECT)-rpi1-$(VER) .
+	GOOS=linux GOARCH=arm GOARM=5 go build $(LDFLAGS) -o $(PROJECT)-$@-$(VER) .
