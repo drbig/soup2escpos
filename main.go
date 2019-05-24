@@ -117,7 +117,7 @@ var ESCPOS = map[string]TagDefintion{
 			if (h < 8) && (h > 162) {
 				log.Fatalln("Height out of range")
 			}
-			log.Println("Barcode will be of height:", hint)
+			//log.Println("Barcode will be of height:", hint)
 			preCodes.WriteString("\x1d\x68")
 			preCodes.WriteByte(h)
 			postCodes.WriteString("\x1d\x68\xa2") // reset height to default 162
