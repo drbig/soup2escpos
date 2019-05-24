@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	VERSION = `0.5.2`
+	VERSION = `0.6.0`
 )
 
 var build = `UNKNOWN` // injected via Makefile
