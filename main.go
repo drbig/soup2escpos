@@ -75,6 +75,7 @@ var ESCPOS = map[string]TagDefintion{
 	"b":      {"\x1b\x45\x01", "\x1b\x45\x00", false, nil},
 	"u":      {"\x1b\x2d\x01", "\x1b\x2d\x00", false, nil},
 	"uu":     {"\x1b\x2d\x02", "\x1b\x2d\x00", false, nil},
+	"inv":    {"\x1d\x42\x01", "\x1d\x42\x00", false, nil},
 	"small":  {"\x1b\x4d\x01", "\x1b\x4d\x00", false, nil},
 	"center": {"\x1b\x61\x01", "\n\x1b\x61\x00", true, nil},
 	"right":  {"\x1b\x61\x02", "\n\x1b\x61\x00", true, nil},
