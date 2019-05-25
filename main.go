@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	VERSION = `0.6.0`
+	VERSION = `0.6.6`
 )
 
 var build = `UNKNOWN` // injected via Makefile
@@ -57,18 +57,18 @@ var BARCODE_HRI_FONT = map[string]string{
 	"normal": "\x00",
 }
 
-const PAPER_WIDTH_IN = 2 // for images width sanity check only
+const PAPER_WIDTH_IN = 2.112 // for images width sanity check only
 
 type ImageDefintion struct {
 	Code   string
-	HorDPI int
+	HorDPI float64
 }
 
 var IMG_MODE = map[string]ImageDefintion{
-	"normal": {"\x00", 180},
-	"wide":   {"\x01", 90},
-	"tall":   {"\x02", 180},
-	"huge":   {"\x03", 90},
+	"normal": {"\x00", 180.0},
+	"wide":   {"\x01", 90.0},
+	"tall":   {"\x02", 180.0},
+	"huge":   {"\x03", 90.0},
 }
 
 var ESCPOS = map[string]TagDefintion{
@@ -167,7 +167,7 @@ var ESCPOS = map[string]TagDefintion{
 				log.Fatalln("No such image mode:", mname)
 			}
 		}
-		maxWidth := PAPER_WIDTH_IN * mode.HorDPI
+		maxWidth := int(PAPER_WIDTH_IN * mode.HorDPI)
 		if cfg.Width > maxWidth {
 			log.Fatalln("Image width of", cfg.Width, "exceeds calculated max of", maxWidth)
 		}
