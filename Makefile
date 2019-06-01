@@ -9,6 +9,7 @@ LDFLAGS := -ldflags='-X "main.build=$(BUILD)"'
 all: $(TGTS) bin/checksums.md5
 
 test: $(TGTS)
+	@./tests/test.sh ./bin/$(PROJECT)-amd64-$(VER)
 
 clean:
 	@rm -f bin/*
