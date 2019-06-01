@@ -288,15 +288,15 @@ func getTagDef(rawName string) TagDefintion {
 	return def
 }
 
-func getAttr(e xml.StartElement, name string, required bool) (mode string) {
+func getAttr(e xml.StartElement, name string, required bool) (val string) {
 	for _, a := range e.Attr {
 		if strings.ToLower(a.Name.Local) == name {
-			mode = a.Value
+			val = a.Value
 			break
 		}
 	}
-	if (mode == "") && required {
+	if (val == "") && required {
 		log.Fatalf("Required attr '%s' not found\n", name)
 	}
-	return mode
+	return val
 }
