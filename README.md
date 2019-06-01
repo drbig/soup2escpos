@@ -1,4 +1,4 @@
-# soup2esc
+# soup2escpos [![Build Status](https://travis-ci.org/drbig/soup2escpos.svg?branch=master)](https://travis-ci.org/drbig/soup2escpos)
 
 Soup2esc takes a HTML-like-input (a tag soup) and produces an
 ESC/POS-compatible output. It makes it easy to send stuff to a "receipt"
