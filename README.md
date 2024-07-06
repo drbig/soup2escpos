@@ -45,4 +45,4 @@ Standard two-clause BSD license, see LICENSE.txt for details.
 
 Any contributions will be licensed under the same conditions.
 
-Copyright (c) 2019 Piotr S. Staszewski
+Copyright (c) 2019 - 2024 Piotr S. Staszewski
